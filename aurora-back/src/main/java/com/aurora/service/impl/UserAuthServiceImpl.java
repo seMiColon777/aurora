@@ -24,9 +24,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import lombok.SneakyThrows;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
@@ -35,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.aurora.constant.RabbitMQConstant.EMAIL_EXCHANGE;
 import static com.aurora.constant.RedisConstant.*;
 import static com.aurora.enums.UserAreaTypeEnum.getUserAreaType;
 import static com.aurora.util.CommonUtil.checkEmail;
@@ -64,9 +60,6 @@ public class UserAuthServiceImpl implements UserAuthService {
     private TokenService tokenService;
 
     @Autowired
-    private RabbitTemplate rabbitTemplate;
-
-    @Autowired
     private SocialLoginStrategyContext socialLoginStrategyContext;
 
     @Override
@@ -83,7 +76,6 @@ public class UserAuthServiceImpl implements UserAuthService {
                 .template("common.html")
                 .commentMap(map)
                 .build();
-        rabbitTemplate.convertAndSend(EMAIL_EXCHANGE, "*", new Message(JSON.toJSONBytes(emailDTO), new MessageProperties()));
         redisService.set(USER_CODE_KEY + username, code, CODE_EXPIRE_TIME);
     }
 

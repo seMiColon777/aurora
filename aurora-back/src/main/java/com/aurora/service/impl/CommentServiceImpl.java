@@ -27,9 +27,6 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.annotation.PostConstruct;
 import lombok.SneakyThrows;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -63,9 +60,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     @Autowired
     private AuroraInfoService auroraInfoService;
-
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
 
     private static final List<Integer> types = new ArrayList<>();
 
@@ -237,7 +231,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                         .template("common.html")
                         .commentMap(map)
                         .build();
-                rabbitTemplate.convertAndSend(EMAIL_EXCHANGE, "*", new Message(JSON.toJSONBytes(emailDTO), new MessageProperties()));
             }
             if (comment.getUserId().equals(parentComment.getUserId())) {
                 return;
@@ -267,7 +260,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         UserInfo userInfo = userInfoMapper.selectById(userId);
         if (StringUtils.isNotBlank(userInfo.getEmail())) {
             EmailDTO emailDTO = getEmailDTO(comment, userInfo, fromNickname, topicId, title);
-            rabbitTemplate.convertAndSend(EMAIL_EXCHANGE, "*", new Message(JSON.toJSONBytes(emailDTO), new MessageProperties()));
         }
     }
 
